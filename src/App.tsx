@@ -84,12 +84,33 @@ interface ResumeData {
   projects: Project[];
   certifications: Certification[];
   achievements: string;
+  targetJob: string;
+  themeColor: string;
 }
 
 
 // ============================================
 // UTILITIES
 // ============================================
+
+export const THEME_OPTIONS = [
+  { id: "slate", name: "Slate", color: "#475569" },
+  { id: "emerald", name: "Emerald", color: "#059669" },
+  { id: "indigo", name: "Indigo", color: "#4f46e5" },
+  { id: "rose", name: "Rose", color: "#e11d48" },
+  { id: "amber", name: "Amber", color: "#d97706" },
+];
+
+export const getThemeStyle = (colorId: string) => {
+  const themes: Record<string, any> = {
+    slate: { "--color-premium-50": "#f8fafc", "--color-premium-100": "#f1f5f9", "--color-premium-400": "#94a3b8", "--color-premium-500": "#64748b", "--color-premium-600": "#475569", "--color-premium-700": "#334155", "--color-premium-900": "#0f172a" },
+    emerald: { "--color-premium-50": "#ecfdf5", "--color-premium-100": "#d1fae5", "--color-premium-400": "#34d399", "--color-premium-500": "#10b981", "--color-premium-600": "#059669", "--color-premium-700": "#047857", "--color-premium-900": "#064e3b" },
+    indigo: { "--color-premium-50": "#eef2ff", "--color-premium-100": "#e0e7ff", "--color-premium-400": "#818cf8", "--color-premium-500": "#6366f1", "--color-premium-600": "#4f46e5", "--color-premium-700": "#4338ca", "--color-premium-900": "#312e81" },
+    rose: { "--color-premium-50": "#fff1f2", "--color-premium-100": "#ffe4e6", "--color-premium-400": "#fb7185", "--color-premium-500": "#f43f5e", "--color-premium-600": "#e11d48", "--color-premium-700": "#be123c", "--color-premium-900": "#881337" },
+    amber: { "--color-premium-50": "#fffbeb", "--color-premium-100": "#fef3c7", "--color-premium-400": "#fbbf24", "--color-premium-500": "#f59e0b", "--color-premium-600": "#d97706", "--color-premium-700": "#b45309", "--color-premium-900": "#78350f" },
+  };
+  return themes[colorId] || themes.slate;
+};
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const actionVerbs = [
@@ -183,13 +204,13 @@ function generateBulletPoints(description: string): string[] {
   });
 }
 
-function generateSummary(objective: string, skills: string, experience: WorkExperience[]): string {
-  if (!objective.trim() && !skills.trim()) return "";
+function generateSummary(objective: string, skills: string, experience: WorkExperience[], targetJob: string = ""): string {
+  if (!objective.trim() && !skills.trim() && !targetJob.trim()) return "";
   let summary = objective.trim() ? transformToProfessional(objective) : "";
   
-  if (!summary && experience.length > 0) {
-    const latestRole = experience[0];
-    summary = `Results-driven professional with demonstrated expertise in ${latestRole.position.toLowerCase()}. Proven track record of delivering high-impact solutions and driving organizational success.`;
+  if (!summary) {
+    const roleContext = targetJob.trim() ? targetJob : (experience.length > 0 ? experience[0].position : "professional");
+    summary = `Results-driven ${roleContext.toLowerCase()} with a proven track record of delivering high-impact solutions and driving organizational success.`;
   }
 
   if (skills.trim()) {
@@ -200,6 +221,41 @@ function generateSummary(objective: string, skills: string, experience: WorkExpe
   return summary;
 }
 
+function calculateATSScore(data: ResumeData): number {
+  let score = 0;
+  // Basic info (up to 20 points)
+  if (data.personalInfo.fullName.length > 2) score += 5;
+  if (data.personalInfo.email.includes("@")) score += 5;
+  if (data.personalInfo.phone.length > 5) score += 5;
+  if (data.personalInfo.linkedin || data.personalInfo.website) score += 5;
+  
+  // Target Job & Objective (up to 15 points)
+  if (data.targetJob.length > 2) score += 10;
+  if (data.careerObjective.length > 20) score += 5;
+
+  // Experience (up to 30 points)
+  if (data.workExperience.filter(e => e.company).length > 0) score += 10;
+  let hasMetrics = false;
+  data.workExperience.forEach(exp => {
+    if (exp.description.length > 50) score += 5;
+    if (/\d+%|\$\d+|\d+x|\d+ users/i.test(exp.description)) hasMetrics = true;
+  });
+  if (hasMetrics) score += 10; // Bonus for quantifiable achievements
+
+  // Skills & Education (up to 20 points)
+  const skillCount = data.skills.split(",").filter(s => s.trim().length > 1).length;
+  if (skillCount >= 5) score += 10;
+  else if (skillCount > 0) score += 5;
+  
+  if (data.education.filter(e => e.school).length > 0) score += 10;
+
+  // Projects & Extras (up to 15 points)
+  if (data.projects.filter(p => p.name).length > 0) score += 10;
+  if (data.certifications.filter(c => c.name).length > 0 || data.achievements.length > 5) score += 5;
+
+  return Math.min(100, score);
+}
+
 function processAchievements(achievements: string): string[] {
   if (!achievements.trim()) return [];
   return achievements.split(/[;\n•]+/).map(s => s.trim()).filter(s => s.length > 3).map(a => transformToProfessional(a));
@@ -208,6 +264,34 @@ function processAchievements(achievements: string): string[] {
 function processSkills(skills: string): string[] {
   if (!skills.trim()) return [];
   return skills.split(/[,;\n•]+/).map(s => s.trim()).filter(s => s.length > 1);
+}
+
+function generateCoverLetterContext(data: ResumeData): string {
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const role = data.targetJob || (data.workExperience[0]?.position || "the open position");
+  const company = data.workExperience.length > 0 ? "Hiring Manager" : "To whom it may concern";
+  const years = data.workExperience.length > 1 ? `${data.workExperience.length}+ years` : "extensive experience";
+  const topSkills = data.skills.split(',').slice(0, 3).map(s => s.trim()).filter(Boolean).join(', ');
+  
+  return `${data.personalInfo.fullName}
+${data.personalInfo.email} | ${data.personalInfo.phone}
+${data.personalInfo.location}
+
+${date}
+
+Dear ${company},
+
+I am writing to express my strong interest in the ${role} position. With ${years} of professional experience and a proven track record of delivering high-impact results, I am confident in my ability to make an immediate contribution to your team.
+
+In my recent roles, I have successfully driven key initiatives and collaborated with cross-functional teams to achieve strategic goals. ${topSkills ? `My core competencies in ${topSkills} align perfectly with the requirements of this role.` : ''} I am particularly drawn to your company's innovative approach and am eager to bring my expertise in ${data.workExperience[0]?.position || "problem solving"} to help advance your mission.
+
+I have attached my resume for your review, which further details my professional background and achievements. I would welcome the opportunity to discuss how my skills and experiences align with your needs in an interview.
+
+Thank you for your time and consideration. I look forward to the possibility of discussing this exciting opportunity with you.
+
+Sincerely,
+
+${data.personalInfo.fullName}`;
 }
 
 // ============================================
@@ -240,6 +324,8 @@ const sampleData: ResumeData = {
     { id: "cert2", name: "Google Cloud Professional Developer", issuer: "Google", date: "2022" }
   ],
   achievements: "Winner of TechCorp Global Hackathon 2023. Published 5+ technical articles on Medium with 50k+ reads. Open source contributor to React Native core.",
+  targetJob: "Senior Full Stack Developer",
+  themeColor: "slate",
 };
 
 // ============================================
@@ -340,7 +426,7 @@ function ModernTemplate({ data }: { data: ResumeData }) {
   const achievements = processAchievements(data.achievements);
 
   return (
-    <div className="bg-white p-8 sm:p-12 mx-auto font-sans text-gray-800 shadow-sm" style={{ minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
+    <div className="bg-white p-8 sm:p-12 mx-auto font-sans text-gray-800 shadow-sm" style={{ ...getThemeStyle(data.themeColor), minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
       <header className="border-b-4 border-premium-600 pb-6 mb-8">
         <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight uppercase">{data.personalInfo.fullName || "Your Name"}</h1>
         <div className="mt-4 flex flex-wrap gap-y-2 gap-x-4 text-sm text-gray-600">
@@ -481,7 +567,7 @@ function ClassicTemplate({ data }: { data: ResumeData }) {
   const achievements = processAchievements(data.achievements);
 
   return (
-    <div className="bg-white p-12 mx-auto font-serif text-gray-800 shadow-sm" style={{ minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
+    <div className="bg-white p-12 mx-auto font-serif text-gray-800 shadow-sm" style={{ ...getThemeStyle(data.themeColor), minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
       <header className="text-center border-b-2 border-gray-900 pb-6 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-wider">{data.personalInfo.fullName || "Your Name"}</h1>
         <div className="mt-4 flex justify-center flex-wrap gap-x-4 text-xs text-gray-600">
@@ -587,7 +673,7 @@ function MinimalTemplate({ data }: { data: ResumeData }) {
   const achievements = processAchievements(data.achievements);
 
   return (
-    <div className="bg-white p-12 mx-auto font-sans text-gray-700 shadow-sm" style={{ minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
+    <div className="bg-white p-12 mx-auto font-sans text-gray-700 shadow-sm" style={{ ...getThemeStyle(data.themeColor), minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
       <header className="mb-12">
         <h1 className="text-2xl font-light text-gray-900 tracking-widest uppercase">{data.personalInfo.fullName || "Your Name"}</h1>
         <p className="mt-2 text-[10px] text-gray-400 tracking-[0.2em] flex flex-wrap gap-x-3">
@@ -678,7 +764,7 @@ function ExecutiveTemplate({ data }: { data: ResumeData }) {
   const achievements = processAchievements(data.achievements);
 
   return (
-    <div className="bg-white mx-auto font-sans text-gray-800 shadow-sm pb-12" style={{ minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
+    <div className="bg-white mx-auto font-sans text-gray-800 shadow-sm pb-12" style={{ ...getThemeStyle(data.themeColor), minHeight: "297mm", width: "100%", maxWidth: "210mm" }}>
       <header className="bg-premium-900 text-white p-12">
         <h1 className="text-4xl font-black tracking-tight">{data.personalInfo.fullName || "Your Name"}</h1>
         <div className="mt-4 flex flex-wrap gap-4 text-xs text-premium-100 font-medium">
@@ -801,6 +887,10 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notification, setNotification] = useState("");
   const previewRef = useRef<HTMLDivElement>(null);
+  
+  const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [coverLetterContent, setCoverLetterContent] = useState("");
+  const coverLetterRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     { label: "Personal", icon: <User className="w-4 h-4" /> },
@@ -822,6 +912,8 @@ export default function App() {
     projects: [{ id: generateId(), name: "", technologies: "", description: "", link: "" }],
     certifications: [{ id: generateId(), name: "", issuer: "", date: "" }],
     achievements: "",
+    targetJob: "",
+    themeColor: "slate",
   });
 
   const updatePersonalInfo = (field: keyof PersonalInfo, val: string) => {
@@ -947,6 +1039,67 @@ ${achievements.length ? `<h2 style="color: #475569; font-size: 12pt; text-transf
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showCoverLetter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                  <FileText className="w-6 h-6 text-premium-600" /> AI Cover Letter
+                </h3>
+                <div className="flex gap-3">
+                  <button onClick={async () => {
+                    showNotification("Preparing Cover Letter PDF...");
+                    if (!coverLetterRef.current) return;
+                    const canvas = await html2canvas(coverLetterRef.current, { scale: 2 });
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`${resumeData.personalInfo.fullName ? resumeData.personalInfo.fullName.replace(/\s+/g, "_") : "My"}_Cover_Letter.pdf`);
+                    showNotification("Cover Letter downloaded! ✅");
+                  }} className="px-5 py-2.5 bg-premium-900 text-white rounded-xl font-bold hover:bg-black transition-all text-sm flex items-center gap-2">
+                    <Download className="w-4 h-4" /> Download PDF
+                  </button>
+                  <button onClick={() => setShowCoverLetter(false)} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-sm">
+                    Close
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto p-8 bg-gray-100/50 flex gap-8">
+                <div className="flex-1 flex flex-col">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Edit Content</label>
+                  <textarea 
+                    value={coverLetterContent}
+                    onChange={(e) => setCoverLetterContent(e.target.value)}
+                    className="flex-1 w-full p-6 rounded-2xl border-2 border-premium-100 focus:border-premium-500 focus:ring-4 focus:ring-premium-100 outline-none resize-none text-sm text-gray-700 leading-relaxed font-sans shadow-inner"
+                  />
+                </div>
+                <div className="hidden lg:block w-[400px]">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Preview</label>
+                  <div className="bg-white p-8 rounded-sm shadow-md h-full overflow-auto text-[12px] text-gray-800 font-serif leading-relaxed" ref={coverLetterRef}>
+                    {coverLetterContent.split('\\n').map((line, i) => (
+                      <p key={i} className={line.trim() === "" ? "h-4" : "mb-2"}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <header className="text-center mb-16 px-4">
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
@@ -995,6 +1148,28 @@ ${achievements.length ? `<h2 style="color: #475569; font-size: 12pt; text-transf
                   <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" /> Load Sample Data
                 </button>
               </div>
+
+              {/* ATS Optimization Score */}
+              <div className="pt-8 border-t border-gray-100 mt-8">
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-premium-400 to-indigo-400 opacity-20" />
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">ATS Optimization</h4>
+                  
+                  <div className="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                    <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#f1f5f9" strokeWidth="8" />
+                      <circle cx="50" cy="50" r="45" fill="none" stroke={calculateATSScore(resumeData) >= 80 ? "#10b981" : calculateATSScore(resumeData) >= 50 ? "#f59e0b" : "#ef4444"} strokeWidth="8" strokeDasharray={`${calculateATSScore(resumeData) * 2.83} 283`} className="transition-all duration-1000 ease-out" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center flex-col">
+                      <span className="text-2xl font-black text-gray-900">{calculateATSScore(resumeData)}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-[10px] text-gray-500 font-medium">
+                    {calculateATSScore(resumeData) >= 80 ? "Great job! Ready to apply." : calculateATSScore(resumeData) >= 50 ? "Add more metrics and skills." : "Needs more detail to pass ATS."}
+                  </p>
+                </div>
+              </div>
             </aside>
 
             <main className="flex-1 w-full">
@@ -1021,11 +1196,19 @@ ${achievements.length ? `<h2 style="color: #475569; font-size: 12pt; text-transf
 
                   {currentStep === 1 && (
                     <SectionCard title="Career Objective" icon={<Target />}>
+                      <div className="mb-6">
+                        <InputField 
+                          label="Target Job Title" 
+                          value={resumeData.targetJob} 
+                          onChange={(v) => setResumeData({...resumeData, targetJob: v})} 
+                          placeholder="e.g., Senior Frontend Engineer" 
+                        />
+                      </div>
                       <TextAreaField 
                         label="Profile Summary" 
                         value={resumeData.careerObjective} 
                         onChange={(v) => setResumeData({...resumeData, careerObjective: v})} 
-                        hint="Describe your career goals. Our AI will transform this into a powerful professional summary."
+                        hint="Describe your career goals. If left empty, our AI will generate a powerful summary based on your experience and target role."
                         placeholder="e.g., I'm a software developer with 5 years of experience in React..."
                         rows={6}
                       />
@@ -1261,35 +1444,56 @@ ${achievements.length ? `<h2 style="color: #475569; font-size: 12pt; text-transf
                   )}
                   
                   {currentStep === 7 && (
-                    <SectionCard title="Template Selection" icon={<Layout />}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {templates.map(t => (
-                          <button
-                            key={t.id}
-                            onClick={() => setSelectedTemplate(t.id)}
-                            className={`p-6 rounded-3xl border-2 text-left transition-all duration-500 relative overflow-hidden group ${
-                              selectedTemplate === t.id 
-                                ? "border-premium-600 bg-white shadow-2xl shadow-premium-100" 
-                                : "border-gray-100 bg-gray-50/50 hover:bg-white hover:border-premium-200"
-                            }`}
-                          >
-                            {selectedTemplate === t.id && (
-                              <motion.div 
-                                layoutId="template-selection" 
-                                className="absolute inset-0 bg-premium-600/5 z-0" 
-                              />
-                            )}
-                            <div className="relative z-10">
-                              <div className={`p-3 rounded-2xl inline-block mb-4 transition-colors ${selectedTemplate === t.id ? "bg-premium-600 text-white" : "bg-white text-gray-400 group-hover:text-premium-500"}`}>
-                                {t.icon}
+                    <div className="space-y-6">
+                      <SectionCard title="Template Selection" icon={<Layout />}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {templates.map(t => (
+                            <button
+                              key={t.id}
+                              onClick={() => setSelectedTemplate(t.id)}
+                              className={`p-6 rounded-3xl border-2 text-left transition-all duration-500 relative overflow-hidden group ${
+                                selectedTemplate === t.id 
+                                  ? "border-premium-600 bg-white shadow-2xl shadow-premium-100" 
+                                  : "border-gray-100 bg-gray-50/50 hover:bg-white hover:border-premium-200"
+                              }`}
+                            >
+                              {selectedTemplate === t.id && (
+                                <motion.div 
+                                  layoutId="template-selection" 
+                                  className="absolute inset-0 bg-premium-600/5 z-0" 
+                                />
+                              )}
+                              <div className="relative z-10">
+                                <div className={`p-3 rounded-2xl inline-block mb-4 transition-colors ${selectedTemplate === t.id ? "bg-premium-600 text-white" : "bg-white text-gray-400 group-hover:text-premium-500"}`}>
+                                  {t.icon}
+                                </div>
+                                <h4 className="font-black text-gray-900 leading-tight">{t.name}</h4>
+                                <p className="text-xs font-medium text-gray-400 mt-2">{t.description}</p>
                               </div>
-                              <h4 className="font-black text-gray-900 leading-tight">{t.name}</h4>
-                              <p className="text-xs font-medium text-gray-400 mt-2">{t.description}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </SectionCard>
+                            </button>
+                          ))}
+                        </div>
+                      </SectionCard>
+
+                      <SectionCard title="Accent Color" icon={<Sparkles />}>
+                        <div className="flex flex-wrap gap-4">
+                          {THEME_OPTIONS.map(theme => (
+                            <button
+                              key={theme.id}
+                              onClick={() => setResumeData({...resumeData, themeColor: theme.id})}
+                              className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all ${
+                                resumeData.themeColor === theme.id 
+                                  ? "border-gray-900 bg-white shadow-md shadow-gray-200" 
+                                  : "border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-300"
+                              }`}
+                            >
+                              <div className="w-6 h-6 rounded-full shadow-inner border border-black/10" style={{ backgroundColor: theme.color }} />
+                              <span className="text-sm font-bold text-gray-700">{theme.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </SectionCard>
+                    </div>
                   )}
                   
                   <div className="flex items-center justify-between mt-12 pb-12">
@@ -1346,19 +1550,28 @@ ${achievements.length ? `<h2 style="color: #475569; font-size: 12pt; text-transf
                 </select>
                 <button 
                   onClick={() => setShowPreview(false)}
-                  className="px-8 py-4 rounded-2xl font-bold text-gray-500 hover:bg-white hover:shadow-md transition-all"
+                  className="px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-white hover:shadow-md transition-all"
                 >
                   Edit Resume
                 </button>
                 <button 
+                  onClick={() => {
+                    setCoverLetterContent(generateCoverLetterContext(resumeData));
+                    setShowCoverLetter(true);
+                  }}
+                  className="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black shadow-lg shadow-emerald-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" /> Cover Letter
+                </button>
+                <button 
                   onClick={downloadPDF}
-                  className="px-10 py-4 bg-premium-900 text-white rounded-2xl font-black shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-3"
+                  className="px-6 py-4 bg-premium-900 text-white rounded-2xl font-black shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
                 >
                   <Download className="w-5 h-5" /> Save as PDF
                 </button>
                 <button 
                   onClick={downloadDOCX}
-                  className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center gap-3"
+                  className="px-6 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center gap-2"
                 >
                   <FileText className="w-5 h-5" /> Save as DOCX
                 </button>
