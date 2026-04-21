@@ -1,73 +1,81 @@
-# React + TypeScript + Vite
+# ResumeAI — Premium AI Resume Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**ResumeAI** is a production-ready, intelligent resume building platform designed to transform plain-text career data into high-impact, ATS-optimized professional documents. Built with security, performance, and accessibility as core priorities.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Key Features
 
-## React Compiler
+### 🧠 Intelligence Layer
+- **ATS Analytics**: Real-time scoring (0-100) based on industry-standard parsing rules.
+- **Keyword Optimizer**: Match your resume against any job description to identify missing technical keywords.
+- **Local NLP Engine**: AI-powered text transformation for bullet points, professional summaries, and cover letters—**zero API dependency** ensures maximum privacy and zero latency.
+- **Context-Aware Suggestions**: Real-time skill suggestions based on your target job title.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🛡️ Security & Roles
+- **Access Code Authentication**: Secure, hashed (SHA-256) entry Gate. No direct URL access.
+- **RBAC (Role Based Access Control)**:
+    - **User**: Build, preview, and export resumes.
+    - **Admin**: Full access + dedicated dashboard to update access codes for both roles.
 
-## Expanding the ESLint configuration
+### 🎨 Premium UI/UX
+- **Modern Aesthetic**: Glassmorphism-inspired design with a fluid, system-aware dark/light theme.
+- **Responsive Layout**: Fully optimized for mobile, tablet, and desktop building experiences.
+- **Animated Transitions**: Smooth, spring-physics animations powered by Framer Motion.
+- **Professional Templates**: 4 distinct templates (Modern, Classic, Minimal, Executive) designed for various industry verticals.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 📁 Data & Portability
+- **Auto-Save**: 30-second interval local persistence.
+- **Undo/Redo History**: Reliable state management for error-free building.
+- **Multi-Format Export**: High-fidelity PDF, DOCX, and portable JSON export/import.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Technology Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Frontend**: React 19 (Strict Mode), TypeScript
+- **Styling**: Tailwind CSS v4, Vanilla CSS (Design Tokens)
+- **State Management**: Context API (Auth, Theme, Resume)
+- **Animations**: Framer Motion
+- **Utilities**: Lucide Icons, html2canvas, jsPDF
+- **Build Tool**: Vite 6.x
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Installation
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Default Access Codes
+- **User Access**: `1234`
+- **Admin Access**: `admin123`
+
+> [!NOTE]
+> Access codes are hashed using SHA-256 before storage. Admins can update these codes via the Settings panel in the main dashboard.
+
+---
+
+## 📦 Deployment
+
+The application is a standalone SPA. To deploy:
+1. Build the project:
+   ```bash
+   npm run build
+   ```
+2. Deploy the `dist/` folder to any static hosting provider (Netlify, Vercel, GitHub Pages, etc.).
+
+---
+
+## 📝 License
+Proprietary — Created for professional career development.
+
+Created by **Antigravity**.
