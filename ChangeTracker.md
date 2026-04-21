@@ -4,8 +4,23 @@ This document tracks all architectural and functional changes implemented during
 
 ---
 
-## [3.0.0] — 2026-04-21 (Current)
+## [3.1.0] — 2026-04-21 (Current)
+### 🍱 Template Expansion
+- **Creative Template**: Added a bold, asymmetric design with an accent sidebar for high visual impact.
+- **Professional Template**: Introduced a sophisticated, serif-based authoritative layout for executive roles.
+- **Compact Template**: Developed a high-density, single-column design optimized for extensive career histories (1-page efficiency).
+- **Registry Update**: Integrated all new templates into the builder selection and preview router.
 
+### ⚡ UI & Performance
+- **Flicker Fix**: Eliminated UI flickering in the Template selection step by migrating from layout projection to hardware-accelerated animations.
+- **Lint Sanitization**: Performed a full sweep of the codebase to remove unused imports and redundant Lucide icon declarations.
+
+### 🔐 Security Updates
+- **Credential Refresh**: Updated default administrative and user access codes to enhanced values (`skadmin@2024` and `user@2026`).
+
+---
+
+## [3.0.0] — 2026-04-21
 ### 🏗️ Architectural Overhaul
 - **Monolith to Modular**: Transitioned from a single 1,600+ line `App.tsx` prototype to a highly structured directory system.
 - **Provider Pattern**: Implemented `AuthContext`, `ThemeContext`, and `ResumeContext` for robust state management.

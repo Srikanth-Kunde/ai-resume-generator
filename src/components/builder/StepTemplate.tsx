@@ -1,4 +1,4 @@
-import { Layout, Sparkles, FileText, Briefcase } from 'lucide-react';
+import { Layout, Sparkles, FileText, Briefcase, Award, Rocket, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SectionCard from '../shared/SectionCard';
 import { useResume } from '../../context/ResumeContext';
@@ -8,6 +8,9 @@ const templates = [
   { id: 'classic', name: 'Classic', description: 'Traditional professional', icon: <FileText className="w-6 h-6" /> },
   { id: 'minimal', name: 'Minimal', description: 'Simple and elegant', icon: <Sparkles className="w-6 h-6" /> },
   { id: 'executive', name: 'Executive', description: 'Bold and impactful', icon: <Briefcase className="w-6 h-6" /> },
+  { id: 'creative', name: 'Creative', description: 'Bold and asymmetric', icon: <Rocket className="w-6 h-6" /> },
+  { id: 'professional', name: 'Professional', description: 'High-authority executive', icon: <Award className="w-6 h-6" /> },
+  { id: 'compact', name: 'Compact', description: 'Efficiency-optimized', icon: <Zap className="w-6 h-6" /> },
 ];
 
 export const THEME_OPTIONS = [
@@ -51,14 +54,15 @@ export default function StepTemplate({ selectedTemplate, onSelectTemplate }: Pro
             >
               {selectedTemplate === t.id && (
                 <motion.div
-                  layoutId="template-active"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   style={{
                     position: 'absolute', inset: 0,
                     background: 'var(--accent-glow)',
                     borderRadius: 'var(--radius-xl)',
                     zIndex: 0,
                   }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  transition={{ duration: 0.2 }}
                 />
               )}
               <div style={{ position: 'relative', zIndex: 1 }}>

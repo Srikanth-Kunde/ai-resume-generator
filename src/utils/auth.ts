@@ -17,8 +17,8 @@ async function sha256(message: string): Promise<string> {
 
 // Default: admin2024 → hash, user2024 → hash
 // These are computed at init time and cached.
-const DEFAULT_ADMIN_CODE = 'admin2024';
-const DEFAULT_USER_CODE = 'user2024';
+const DEFAULT_ADMIN_CODE = 'skadmin@2024';
+const DEFAULT_USER_CODE = 'user@2026';
 
 let defaultHashes: AuthCredentials | null = null;
 

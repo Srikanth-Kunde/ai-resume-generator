@@ -56,8 +56,8 @@
    ```
 
 ### Default Access Codes
-- **User Access**: `1234`
-- **Admin Access**: `admin123`
+- **User Access**: `user@2026`
+- **Admin Access**: `skadmin@2024`
 
 > [!NOTE]
 > Access codes are hashed using SHA-256 before storage. Admins can update these codes via the Settings panel in the main dashboard.
