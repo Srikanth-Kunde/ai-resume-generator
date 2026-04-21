@@ -10,39 +10,58 @@ export async function downloadPDF(
   fileName: string,
   onProgress?: (msg: string) => void
 ): Promise<void> {
-  onProgress?.('Preparing high-quality PDF...');
+  try {
+    onProgress?.('Preparing high-quality PDF...');
 
-  const html2canvas = (await import('html2canvas')).default;
-  const jsPDF = (await import('jspdf')).default;
+    // Robust dynamic imports
+    const html2canvasModule = await import('html2canvas');
+    const html2canvas = html2canvasModule.default || html2canvasModule;
+    
+    const jspdfModule = await import('jspdf');
+    const jsPDF = jspdfModule.jsPDF || jspdfModule.default || jspdfModule;
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: '#ffffff',
-  });
+    const canvas = await html2canvas(element, {
+      scale: 1.5, // Slightly lower scale for better performance and reliability
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      onclone: (_clonedDoc, clonedElement) => {
+        // Ensure the element has a stable width for capture regardless of screen size
+        clonedElement.style.width = '210mm';
+        clonedElement.style.height = 'auto';
+        clonedElement.style.position = 'relative';
+        clonedElement.style.top = '0';
+        clonedElement.style.left = '0';
+      }
+    });
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-  let heightLeft = pdfHeight;
-  let position = 0;
+    let heightLeft = pdfHeight;
+    let position = 0;
 
-  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-  heightLeft -= pageHeight;
-
-  while (heightLeft > 0) {
-    position = heightLeft - pdfHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+    // Add first page
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
-  }
 
-  pdf.save(fileName);
-  onProgress?.('PDF downloaded successfully! ✅');
+    // Add subsequent pages if content overflows
+    while (heightLeft > 0) {
+      position = heightLeft - pdfHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(fileName);
+    onProgress?.('PDF downloaded successfully! ✅');
+  } catch (error) {
+    console.error('PDF export failed:', error);
+    onProgress?.('PDF export failed. Please try again.');
+  }
 }
 
 // ============================================

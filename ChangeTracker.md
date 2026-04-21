@@ -9,7 +9,11 @@ This document tracks all architectural and functional changes implemented during
 - **Builder Acceleration**: Removed the "Template Selection" step from the onboarding flow to streamline resume generation. Users now head straight to the dashboard and preview to select templates dynamically.
 - **100% Template Parity**: Standardized all 23 gallery templates to ensure complete feature parity. Every design now supports Projects, Certifications, Achievements, and expanded contact markers (LinkedIn, Website, Location).
 - **Toolbar Customization**: Migrated the Accent Color theme picker directly into the final Preview toolbar for instant visual feedback.
-- **Codebase Hardening**: Executed a deep structural cleanup, eliminating unused components, rectifying state-in-effect traps, and resolving React render-cycle warnings to achieve a pristine, zero-error ESLint production build.
+- **PDF Export Stabilization**: Hardened the `downloadPDF` utility with robust dynamic imports, `onclone` layout stabilization for mobile/small-screen capture, and enhanced error handling with UI notifications.
+- **Codebase Hardening**: 
+    - **Context Refactoring**: Fixed critical React anti-patterns in `AuthContext` (lazy initialization) and `ResumeContext` (eliminated render-cycle ref access).
+    - **Pristine Build**: Resolved all ESLint warnings/errors (Fast Refresh, unused vars, hook rules) to achieve a 100% clean production build.
+    - **Cleanup**: Purged redundant component logic from `StepTemplate.tsx` and removed unused imports system-wide.
 
 ---
 
