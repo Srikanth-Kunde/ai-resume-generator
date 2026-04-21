@@ -1,5 +1,7 @@
 import type { ResumeData } from '../types';
 import { generateBulletPoints, generateSummary, processSkills, processAchievements } from './ai-engine';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 // ============================================
 // PDF EXPORT (html2canvas + jsPDF)
@@ -11,31 +13,30 @@ export async function downloadPDF(
   onProgress?: (msg: string) => void
 ): Promise<void> {
   try {
-    onProgress?.('Preparing high-quality PDF...');
+    onProgress?.('Generating resume image...');
 
-    // Robust dynamic imports
-    const html2canvasModule = await import('html2canvas');
-    const html2canvas = html2canvasModule.default || html2canvasModule;
-    
-    const jspdfModule = await import('jspdf');
-    const jsPDF = jspdfModule.jsPDF || jspdfModule.default || jspdfModule;
+    // Ensure fonts and layout are ready
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      await (document as any).fonts.ready;
+    }
+    await new Promise(r => setTimeout(r, 400));
 
     const canvas = await html2canvas(element, {
-      scale: 1.5, // Slightly lower scale for better performance and reliability
+      scale: 1, // Use standard scale for maximum compatibility
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      onclone: (_clonedDoc, clonedElement) => {
-        // Ensure the element has a stable width for capture regardless of screen size
-        clonedElement.style.width = '210mm';
-        clonedElement.style.height = 'auto';
-        clonedElement.style.position = 'relative';
-        clonedElement.style.top = '0';
-        clonedElement.style.left = '0';
-      }
+      allowTaint: true, // Attempt to capture even with potential cross-origin issues
+      width: element.scrollWidth,
+      height: element.scrollHeight,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
     });
 
+    onProgress?.('Encoding document...');
     const imgData = canvas.toDataURL('image/png');
+    if (!imgData || imgData === 'data:,') throw new Error('Failed to capture resume content.');
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -44,11 +45,9 @@ export async function downloadPDF(
     let heightLeft = pdfHeight;
     let position = 0;
 
-    // Add first page
     pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
 
-    // Add subsequent pages if content overflows
     while (heightLeft > 0) {
       position = heightLeft - pdfHeight;
       pdf.addPage();
@@ -56,11 +55,12 @@ export async function downloadPDF(
       heightLeft -= pageHeight;
     }
 
+    onProgress?.('Saving file...');
     pdf.save(fileName);
     onProgress?.('PDF downloaded successfully! ✅');
-  } catch (error) {
+  } catch (error: any) {
     console.error('PDF export failed:', error);
-    onProgress?.('PDF export failed. Please try again.');
+    onProgress?.(`PDF Error: ${error.message || 'Check console for details'}`);
   }
 }
 

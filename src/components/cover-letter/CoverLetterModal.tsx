@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileText, X } from 'lucide-react';
 import type { ResumeData } from '../../types';
 import { generateCoverLetter } from '../../utils/ai-engine';
+import { downloadPDF } from '../../utils/pdf-export';
 
 interface Props {
   isOpen: boolean;
@@ -17,17 +18,8 @@ export default function CoverLetterModal({ isOpen, onClose, data, onNotify }: Pr
 
   const handleDownload = async () => {
     if (!previewRef.current) return;
-    onNotify('Preparing Cover Letter PDF...');
-    const html2canvas = (await import('html2canvas')).default;
-    const jsPDF = (await import('jspdf')).default;
-    const canvas = await html2canvas(previewRef.current, { scale: 2, backgroundColor: '#ffffff' });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`${data.personalInfo.fullName?.replace(/\s+/g, '_') || 'Cover'}_Letter.pdf`);
-    onNotify('Cover Letter downloaded! ✅');
+    const fileName = `${data.personalInfo.fullName?.replace(/\s+/g, '_') || 'Cover'}_Letter.pdf`;
+    await downloadPDF(previewRef.current, fileName, (msg) => onNotify(msg));
   };
 
   return (
