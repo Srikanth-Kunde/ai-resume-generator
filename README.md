@@ -18,16 +18,13 @@
     - **User**: Build, preview, and export resumes.
     - **Admin**: Full access + dedicated dashboard to update access codes for both roles.
 
-### 🎨 Premium UI/UX
-- **Modern Aesthetic**: Glassmorphism-inspired design with a fluid, system-aware dark/light theme.
-- **Responsive Layout**: Fully optimized for mobile, tablet, and desktop building experiences.
-- **Animated Transitions**: Smooth, spring-physics animations powered by Framer Motion.
-- **Professional Templates**: 4 distinct templates (Modern, Classic, Minimal, Executive) designed for various industry verticals.
-
-### 📁 Data & Portability
-- **Auto-Save**: 30-second interval local persistence.
-- **Undo/Redo History**: Reliable state management for error-free building.
-- **Multi-Format Export**: High-fidelity PDF, DOCX, and portable JSON export/import.
+### Core Features
+- **23 Premium Templates**: Professionally designed layouts including ATS-optimized, Executive, Creative, and Modern styles (inspired by BetterCV).
+- **Gallary-Style Selection**: A dedicated template gallery with category filtering (Simple, Professional, ATS, etc.).
+- **Smooth Real-time Editing**: Minimalist, high-performance editor with instant visual feedback.
+- **AI Content Engine**: Specialized logic for generating high-impact summaries and bullet points.
+- **Code-Splitted Performance**: Optimized component loading for lightning-fast initial dashboards.
+- **Security Hardened**: Advanced role-based access with double-hashed default credentials.table JSON export/import.
 
 ---
 

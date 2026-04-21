@@ -1,16 +1,43 @@
-import { Layout, Sparkles, FileText, Briefcase, Award, Rocket, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Layout, Sparkles, FileText, Briefcase, Award, Rocket, Zap, Columns, Image, CheckCircle, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import SectionCard from '../shared/SectionCard';
 import { useResume } from '../../context/ResumeContext';
+import { useState } from 'react';
 
 const templates = [
-  { id: 'modern', name: 'Modern', description: 'Clean and contemporary', icon: <Layout className="w-6 h-6" /> },
-  { id: 'classic', name: 'Classic', description: 'Traditional professional', icon: <FileText className="w-6 h-6" /> },
-  { id: 'minimal', name: 'Minimal', description: 'Simple and elegant', icon: <Sparkles className="w-6 h-6" /> },
-  { id: 'executive', name: 'Executive', description: 'Bold and impactful', icon: <Briefcase className="w-6 h-6" /> },
-  { id: 'creative', name: 'Creative', description: 'Bold and asymmetric', icon: <Rocket className="w-6 h-6" /> },
-  { id: 'professional', name: 'Professional', description: 'High-authority executive', icon: <Award className="w-6 h-6" /> },
-  { id: 'compact', name: 'Compact', description: 'Efficiency-optimized', icon: <Zap className="w-6 h-6" /> },
+  { id: 'modern', name: 'Modern', description: 'Clean and contemporary', icon: <Layout className="w-6 h-6" />, categories: ['modern', 'professional'] },
+  { id: 'classic', name: 'Classic', description: 'Traditional professional', icon: <FileText className="w-6 h-6" />, categories: ['classic', 'professional'] },
+  { id: 'minimal', name: 'Minimal', description: 'Simple and elegant', icon: <Sparkles className="w-6 h-6" />, categories: ['minimal', 'simple'] },
+  { id: 'executive', name: 'Executive', description: 'Bold and impactful', icon: <Briefcase className="w-6 h-6" />, categories: ['professional', 'ats'] },
+  { id: 'creative', name: 'Creative', description: 'Bold and asymmetric', icon: <Rocket className="w-6 h-6" />, categories: ['creative', 'photo'] },
+  { id: 'professional', name: 'Professional', description: 'High-authority executive', icon: <Award className="w-6 h-6" />, categories: ['professional', 'ats'] },
+  { id: 'compact', name: 'Compact', description: 'Efficiency-optimized', icon: <Zap className="w-6 h-6" />, categories: ['compact', 'simple'] },
+  { id: 'celestial', name: 'Celestial', description: 'Premium 2-column', icon: <Columns className="w-6 h-6" />, categories: ['professional', 'modern'] },
+  { id: 'galaxy', name: 'Galaxy', description: 'Centered classic', icon: <Sparkles className="w-6 h-6" />, categories: ['classic', 'simple'] },
+  { id: 'astral', name: 'Astral', description: 'Modern photo-ready', icon: <Image className="w-6 h-6" />, categories: ['photo', 'modern'] },
+  { id: 'luna', name: 'Luna', description: 'Technical blocked', icon: <Layout className="w-6 h-6" />, categories: ['modern', 'professional'] },
+  { id: 'nova', name: 'Nova', description: 'Ultra-minimalist', icon: <FileText className="w-6 h-6" />, categories: ['simple', 'one column'] },
+  { id: 'solar', name: 'Solar', description: 'Executive spotlight', icon: <Award className="w-6 h-6" />, categories: ['professional', 'ats'] },
+  { id: 'zenith', name: 'Zenith', description: 'Eco-minimalist', icon: <Sparkles className="w-6 h-6" />, categories: ['simple', 'one column'] },
+  { id: 'solstice', name: 'Solstice', description: 'Precision linear', icon: <Columns className="w-6 h-6" />, categories: ['simple', 'ats', 'one column'] },
+  { id: 'eclipse', name: 'Eclipse', description: 'Authoritative bold', icon: <Layout className="w-6 h-6" />, categories: ['professional', 'modern'] },
+  { id: 'pulsar', name: 'Pulsar', description: 'Digital forward', icon: <Rocket className="w-6 h-6" />, categories: ['modern', 'one column'] },
+  { id: 'hyperion', name: 'Hyperion', description: 'Bold hierarchy', icon: <FileText className="w-6 h-6" />, categories: ['professional', 'one column'] },
+  { id: 'aether', name: 'Aether', description: 'Pure ATS reader', icon: <Briefcase className="w-6 h-6" />, categories: ['ats', 'simple'] },
+  { id: 'exoplanet', name: 'Exoplanet', description: 'Refined centering', icon: <Layout className="w-6 h-6" />, categories: ['simple', 'ats'] },
+  { id: 'starburst', name: 'Starburst', description: 'High-contrast sidebar', icon: <Columns className="w-6 h-6" />, categories: ['professional', 'modern'] },
+  { id: 'comet', name: 'Comet', description: 'Vibrant bold header', icon: <Rocket className="w-6 h-6" />, categories: ['modern', 'creative'] },
+  { id: 'quasar', name: 'Quasar', description: 'Minimal precision', icon: <Layout className="w-6 h-6" />, categories: ['simple', 'ats'] },
+];
+
+const CATEGORIES = [
+  { id: 'all', name: 'All Templates', icon: <Layout className="w-4 h-4" /> },
+  { id: 'simple', name: 'Simple', icon: <Sparkles className="w-4 h-4" /> },
+  { id: 'modern', name: 'Modern', icon: <Rocket className="w-4 h-4" /> },
+  { id: 'compact', name: 'One column', icon: <Columns className="w-4 h-4" /> },
+  { id: 'photo', name: 'With photo', icon: <Image className="w-4 h-4" /> },
+  { id: 'professional', name: 'Professional', icon: <Briefcase className="w-4 h-4" /> },
+  { id: 'ats', name: 'ATS', icon: <CheckCircle className="w-4 h-4" /> },
 ];
 
 export const THEME_OPTIONS = [
@@ -41,63 +68,98 @@ interface Props {
 
 export default function StepTemplate({ selectedTemplate, onSelectTemplate }: Props) {
   const { data, setData } = useResume();
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  const filteredTemplates = activeCategory === 'all' 
+    ? templates 
+    : templates.filter(t => t.categories.includes(activeCategory));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <SectionCard title="Template Selection" icon={<Layout className="w-5 h-5" />}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {templates.map(t => (
+    <div className="template-gallery-container">
+      {/* Header Section */}
+      <div className="template-gallery-header">
+        <h1>Resume templates</h1>
+        <p>Simple to use and ready in minutes resume templates — give it a try for free now!</p>
+        <button onClick={() => onSelectTemplate(templates[0].id)} className="choose-later-btn">
+          Choose later
+        </button>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="category-tabs-wrapper">
+        <div className="category-tabs">
+          {CATEGORIES.map(cat => (
             <button
-              key={t.id}
-              onClick={() => onSelectTemplate(t.id)}
-              className={`template-card ${selectedTemplate === t.id ? 'selected' : ''}`}
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`category-tab ${activeCategory === cat.id ? 'active' : ''}`}
             >
-              {selectedTemplate === t.id && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{
-                    position: 'absolute', inset: 0,
-                    background: 'var(--accent-glow)',
-                    borderRadius: 'var(--radius-xl)',
-                    zIndex: 0,
-                  }}
-                  transition={{ duration: 0.2 }}
-                />
+              {cat.icon}
+              <span>{cat.name}</span>
+              {activeCategory === cat.id && (
+                <motion.div layoutId="active-tab" className="active-tab-indicator" />
               )}
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{
-                  display: 'inline-flex', padding: '0.75rem',
-                  borderRadius: 'var(--radius-lg)',
-                  background: selectedTemplate === t.id ? 'var(--accent-primary)' : 'var(--surface-tertiary)',
-                  color: selectedTemplate === t.id ? 'white' : 'var(--text-tertiary)',
-                  marginBottom: '0.75rem',
-                  transition: 'all 0.2s ease',
-                }}>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Templates Grid */}
+      <div className="template-gallery-grid">
+        <AnimatePresence mode="popLayout">
+          {filteredTemplates.map(t => (
+            <motion.div
+              layout
+              key={t.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className={`template-gallery-card ${selectedTemplate === t.id ? 'selected' : ''}`}
+              onClick={() => onSelectTemplate(t.id)}
+            >
+              <div className="card-preview-area">
+                <div className="card-icon-overlay">
                   {t.icon}
                 </div>
-                <h4 style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{t.name}</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>{t.description}</p>
+                {selectedTemplate === t.id && (
+                  <div className="card-selected-badge">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Selected</span>
+                  </div>
+                )}
+                <div className="card-hover-overlay">
+                  <button className="preview-trigger-btn">
+                    Select Template <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </button>
+              <div className="card-info-area">
+                <h3>{t.name}</h3>
+                <p>{t.description}</p>
+              </div>
+            </motion.div>
           ))}
-        </div>
-      </SectionCard>
+        </AnimatePresence>
+      </div>
 
-      <SectionCard title="Accent Color" icon={<Sparkles className="w-5 h-5" />}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-          {THEME_OPTIONS.map(theme => (
-            <button
-              key={theme.id}
-              onClick={() => setData({ ...data, themeColor: theme.id })}
-              className={`color-swatch-btn ${data.themeColor === theme.id ? 'selected' : ''}`}
-            >
-              <div className="color-dot" style={{ backgroundColor: theme.color }} />
-              <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{theme.name}</span>
-            </button>
-          ))}
-        </div>
-      </SectionCard>
+      {/* Customization section (Color Swatches) */}
+      <div style={{ marginTop: '4rem' }}>
+        <SectionCard title="Accent Color" icon={<Sparkles className="w-5 h-5" />}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+            {THEME_OPTIONS.map(theme => (
+              <button
+                key={theme.id}
+                onClick={() => setData({ ...data, themeColor: theme.id })}
+                className={`color-swatch-btn ${data.themeColor === theme.id ? 'selected' : ''}`}
+              >
+                <div className="color-dot" style={{ backgroundColor: theme.color }} />
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{theme.name}</span>
+              </button>
+            ))}
+          </div>
+        </SectionCard>
+      </div>
     </div>
   );
 }
