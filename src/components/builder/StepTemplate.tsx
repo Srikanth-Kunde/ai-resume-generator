@@ -1,8 +1,4 @@
-import { Layout, Sparkles, FileText, Briefcase, Award, Rocket, Zap, Columns, Image, CheckCircle, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import SectionCard from '../shared/SectionCard';
-import { useResume } from '../../context/ResumeContext';
-import { useState } from 'react';
+import { Layout, Sparkles, FileText, Briefcase, Award, Rocket, Zap, Columns, Image } from 'lucide-react';
 
 const templates = [
   { id: 'modern', name: 'Modern', description: 'Clean and contemporary', icon: <Layout className="w-6 h-6" />, categories: ['modern', 'professional'] },
@@ -30,15 +26,7 @@ const templates = [
   { id: 'quasar', name: 'Quasar', description: 'Minimal precision', icon: <Layout className="w-6 h-6" />, categories: ['simple', 'ats'] },
 ];
 
-const CATEGORIES = [
-  { id: 'all', name: 'All Templates', icon: <Layout className="w-4 h-4" /> },
-  { id: 'simple', name: 'Simple', icon: <Sparkles className="w-4 h-4" /> },
-  { id: 'modern', name: 'Modern', icon: <Rocket className="w-4 h-4" /> },
-  { id: 'compact', name: 'One column', icon: <Columns className="w-4 h-4" /> },
-  { id: 'photo', name: 'With photo', icon: <Image className="w-4 h-4" /> },
-  { id: 'professional', name: 'Professional', icon: <Briefcase className="w-4 h-4" /> },
-  { id: 'ats', name: 'ATS', icon: <CheckCircle className="w-4 h-4" /> },
-];
+
 
 export const THEME_OPTIONS = [
   { id: 'slate', name: 'Slate', color: '#475569' },
@@ -61,105 +49,3 @@ export const getThemeStyle = (colorId: string): Record<string, string> => {
 
 export { templates };
 
-interface Props {
-  selectedTemplate: string;
-  onSelectTemplate: (id: string) => void;
-}
-
-export default function StepTemplate({ selectedTemplate, onSelectTemplate }: Props) {
-  const { data, setData } = useResume();
-  const [activeCategory, setActiveCategory] = useState('all');
-
-  const filteredTemplates = activeCategory === 'all' 
-    ? templates 
-    : templates.filter(t => t.categories.includes(activeCategory));
-
-  return (
-    <div className="template-gallery-container">
-      {/* Header Section */}
-      <div className="template-gallery-header">
-        <h1>Resume templates</h1>
-        <p>Simple to use and ready in minutes resume templates — give it a try for free now!</p>
-        <button onClick={() => onSelectTemplate(templates[0].id)} className="choose-later-btn">
-          Choose later
-        </button>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="category-tabs-wrapper">
-        <div className="category-tabs">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`category-tab ${activeCategory === cat.id ? 'active' : ''}`}
-            >
-              {cat.icon}
-              <span>{cat.name}</span>
-              {activeCategory === cat.id && (
-                <motion.div layoutId="active-tab" className="active-tab-indicator" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Templates Grid */}
-      <div className="template-gallery-grid">
-        <AnimatePresence mode="popLayout">
-          {filteredTemplates.map(t => (
-            <motion.div
-              layout
-              key={t.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              className={`template-gallery-card ${selectedTemplate === t.id ? 'selected' : ''}`}
-              onClick={() => onSelectTemplate(t.id)}
-            >
-              <div className="card-preview-area">
-                <div className="card-icon-overlay">
-                  {t.icon}
-                </div>
-                {selectedTemplate === t.id && (
-                  <div className="card-selected-badge">
-                    <CheckCircle className="w-5 h-5" />
-                    <span>Selected</span>
-                  </div>
-                )}
-                <div className="card-hover-overlay">
-                  <button className="preview-trigger-btn">
-                    Select Template <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="card-info-area">
-                <h3>{t.name}</h3>
-                <p>{t.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Customization section (Color Swatches) */}
-      <div style={{ marginTop: '4rem' }}>
-        <SectionCard title="Accent Color" icon={<Sparkles className="w-5 h-5" />}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-            {THEME_OPTIONS.map(theme => (
-              <button
-                key={theme.id}
-                onClick={() => setData({ ...data, themeColor: theme.id })}
-                className={`color-swatch-btn ${data.themeColor === theme.id ? 'selected' : ''}`}
-              >
-                <div className="color-dot" style={{ backgroundColor: theme.color }} />
-                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{theme.name}</span>
-              </button>
-            ))}
-          </div>
-        </SectionCard>
-      </div>
-    </div>
-  );
-}

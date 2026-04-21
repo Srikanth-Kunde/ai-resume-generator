@@ -1,3 +1,4 @@
+import { Mail, Phone, MapPin, Linkedin, Globe } from 'lucide-react';
 import type { ResumeData } from '../../../types';
 import { generateBulletPoints, generateSummary, processSkills, processAchievements } from '../../../utils/ai-engine';
 import { getThemeStyle } from '../../builder/StepTemplate';
@@ -13,10 +14,15 @@ export default function SolarTemplate({ data }: { data: ResumeData }) {
         <h1 style={{ fontSize: '42px', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>{data.personalInfo.fullName || 'Your Name'}</h1>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
           <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-premium-400, #94a3b8)', margin: 0 }}>{data.targetJob}</p>
-          <div style={{ display: 'flex', gap: '15px', fontSize: '10px' }}>
-            {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
-            {data.personalInfo.phone && <span>{data.personalInfo.phone}</span>}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '10px', justifyContent: 'flex-end' }}>
+            {data.personalInfo.email && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={12} /> {data.personalInfo.email}</span>}
+            {data.personalInfo.phone && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} /> {data.personalInfo.phone}</span>}
+            {data.personalInfo.location && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {data.personalInfo.location}</span>}
           </div>
+        </div>
+        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', fontSize: '10px', color: 'var(--color-premium-300, #cbd5e1)' }}>
+          {data.personalInfo.linkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Linkedin size={12} /> {data.personalInfo.linkedin}</span>}
+          {data.personalInfo.website && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Globe size={12} /> {data.personalInfo.website}</span>}
         </div>
       </header>
 
@@ -52,6 +58,27 @@ export default function SolarTemplate({ data }: { data: ResumeData }) {
               </div>
             </section>
           )}
+
+          {data.projects.some(p => p.name) && (
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                 Projects <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {data.projects.filter(p => p.name).map(proj => (
+                  <div key={proj.id}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{proj.name}</h3>
+                    {proj.technologies && <div style={{ fontSize: '10px', color: 'var(--color-premium-500, #64748b)', margin: '4px 0' }}>{proj.technologies}</div>}
+                    <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {generateBulletPoints(proj.description).map((b, i) => (
+                        <li key={i} style={{ fontSize: '11.5px', color: '#334155' }}>{b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
         <aside style={{ background: 'var(--color-premium-50, #f8fafc)', padding: '40px 40px 40px 30px', borderLeft: '1px solid #e2e8f0' }}>
@@ -73,6 +100,18 @@ export default function SolarTemplate({ data }: { data: ResumeData }) {
                 <div key={edu.id} style={{ marginBottom: '15px' }}>
                   <h4 style={{ fontSize: '11.5px', fontWeight: 800, color: '#0f172a' }}>{edu.school}</h4>
                   <p style={{ fontSize: '10px', color: '#64748b', margin: '2px 0' }}>{edu.degree}</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {data.certifications.some(c => c.name) && (
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-premium-700, #334155)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>Certs</h2>
+              {data.certifications.filter(c => c.name).map(cert => (
+                <div key={cert.id} style={{ marginBottom: '10px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>{cert.name}</h4>
+                  <p style={{ fontSize: '9px', color: '#64748b' }}>{cert.issuer}</p>
                 </div>
               ))}
             </section>

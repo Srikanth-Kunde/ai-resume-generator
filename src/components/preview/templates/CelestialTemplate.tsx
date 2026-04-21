@@ -1,11 +1,12 @@
-import { Linkedin, Globe } from 'lucide-react';
+import { Linkedin, Globe, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 import type { ResumeData } from '../../../types';
-import { generateBulletPoints, generateSummary, processSkills } from '../../../utils/ai-engine';
+import { generateBulletPoints, generateSummary, processSkills, processAchievements } from '../../../utils/ai-engine';
 import { getThemeStyle } from '../../builder/StepTemplate';
 
 export default function CelestialTemplate({ data }: { data: ResumeData }) {
   const skills = processSkills(data.skills);
   const summary = generateSummary(data.careerObjective, data.skills, data.workExperience, data.targetJob);
+  const achievements = processAchievements(data.achievements);
 
   return (
     <div className="bg-white p-12 mx-auto font-sans text-gray-800 shadow-sm" style={{ ...getThemeStyle(data.themeColor), minHeight: '297mm', width: '100%', maxWidth: '210mm', fontSize: '11px', lineHeight: '1.6' }}>
@@ -15,16 +16,16 @@ export default function CelestialTemplate({ data }: { data: ResumeData }) {
           <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-premium-600, #475569)', margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '2px' }}>{data.targetJob}</p>
         </div>
         <div style={{ textAlign: 'right', color: '#64748b', fontSize: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {data.personalInfo.location && <span>{data.personalInfo.location}</span>}
-          {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
-          {data.personalInfo.phone && <span>{data.personalInfo.phone}</span>}
+          {data.personalInfo.location && <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}><MapPin size={10} /> {data.personalInfo.location}</span>}
+          {data.personalInfo.email && <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}><Mail size={10} /> {data.personalInfo.email}</span>}
+          {data.personalInfo.phone && <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}><Phone size={10} /> {data.personalInfo.phone}</span>}
         </div>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '40px' }}>
         {/* Sidebar */}
         <aside style={{ borderRight: '1px solid var(--color-premium-100, #f1f5f9)', paddingRight: '20px' }}>
-          {data.personalInfo.linkedin && (
+          {(data.personalInfo.linkedin || data.personalInfo.website) && (
             <div style={{ marginBottom: '25px' }}>
               <h2 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-premium-500, #64748b)', letterSpacing: '1px', marginBottom: '10px' }}>Details</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '10px' }}>
@@ -48,13 +49,36 @@ export default function CelestialTemplate({ data }: { data: ResumeData }) {
           )}
 
           {data.education.some(e => e.school) && (
-            <section>
+            <section style={{ marginBottom: '30px' }}>
               <h2 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-premium-500, #64748b)', letterSpacing: '1px', marginBottom: '15px' }}>Education</h2>
               {data.education.filter(e => e.school).map(edu => (
                 <div key={edu.id} style={{ marginBottom: '15px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>{edu.school}</h4>
                   <p style={{ fontSize: '10px', color: 'var(--color-premium-600, #475569)', margin: '2px 0' }}>{edu.degree}</p>
                   <p style={{ fontSize: '9px', color: '#94a3b8' }}>{edu.endDate}</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {data.certifications.some(c => c.name) && (
+            <section style={{ marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-premium-500, #64748b)', letterSpacing: '1px', marginBottom: '15px' }}>Certs</h2>
+              {data.certifications.filter(c => c.name).map(cert => (
+                <div key={cert.id} style={{ marginBottom: '12px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>{cert.name}</h4>
+                  <p style={{ fontSize: '9px', color: '#64748b' }}>{cert.issuer}</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {achievements.length > 0 && (
+            <section>
+              <h2 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-premium-500, #64748b)', letterSpacing: '1px', marginBottom: '15px' }}>Achievements</h2>
+              {achievements.map((a, i) => (
+                <div key={i} style={{ fontSize: '10px', color: '#334155', marginBottom: '8px', display: 'flex', gap: '6px' }}>
+                  <Sparkles size={12} style={{ color: 'var(--color-premium-400, #94a3b8)' }} /> {a}
                 </div>
               ))}
             </section>
@@ -95,11 +119,16 @@ export default function CelestialTemplate({ data }: { data: ResumeData }) {
           {data.projects.some(p => p.name) && (
             <section>
               <h2 style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: '#0f172a', letterSpacing: '2px', marginBottom: '20px' }}>Projects</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {data.projects.filter(p => p.name).map(proj => (
                   <div key={proj.id}>
                     <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{proj.name}</h3>
-                    <p style={{ fontSize: '11px', color: '#475569', lineHeight: 1.5, marginTop: '4px' }}>{generateBulletPoints(proj.description)[0]}</p>
+                    {proj.technologies && <div style={{ fontSize: '10px', color: 'var(--color-premium-500, #64748b)', fontWeight: 700, margin: '2px 0' }}>{proj.technologies}</div>}
+                    <ul style={{ margin: 0, paddingLeft: '15px', listStyle: 'square', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {generateBulletPoints(proj.description).map((b, i) => (
+                        <li key={i} style={{ fontSize: '11px', color: '#334155', lineHeight: 1.5 }}>{b}</li>
+                      ))}
+                    </ul>
                   </div>
                 ))}
               </div>

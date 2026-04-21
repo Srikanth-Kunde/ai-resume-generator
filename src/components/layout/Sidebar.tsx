@@ -1,4 +1,4 @@
-import { User, Target, Briefcase, GraduationCap, Wrench, Rocket, Award, Layout, Check } from 'lucide-react';
+import { User, Target, Briefcase, GraduationCap, Wrench, Rocket, Award, Check } from 'lucide-react';
 import ATSScoreCard from '../ai/ATSScoreCard';
 import KeywordOptimizer from '../ai/KeywordOptimizer';
 import { useResume } from '../../context/ResumeContext';
@@ -11,7 +11,6 @@ const steps = [
   { label: 'Skills', icon: <Wrench className="w-4 h-4" /> },
   { label: 'Projects', icon: <Rocket className="w-4 h-4" /> },
   { label: 'Extras', icon: <Award className="w-4 h-4" /> },
-  { label: 'Template', icon: <Layout className="w-4 h-4" /> },
 ];
 
 interface Props {
@@ -56,4 +55,5 @@ export default function Sidebar({ currentStep, onStepChange }: Props) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { steps };

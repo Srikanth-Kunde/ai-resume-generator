@@ -4,7 +4,16 @@ This document tracks all architectural and functional changes implemented during
 
 ---
 
-## [3.5.0] — 2026-04-21 (Current)
+## [3.6.0] — 2026-04-22 (Current)
+### 🚀 UX Streamlining & Optimization
+- **Builder Acceleration**: Removed the "Template Selection" step from the onboarding flow to streamline resume generation. Users now head straight to the dashboard and preview to select templates dynamically.
+- **100% Template Parity**: Standardized all 23 gallery templates to ensure complete feature parity. Every design now supports Projects, Certifications, Achievements, and expanded contact markers (LinkedIn, Website, Location).
+- **Toolbar Customization**: Migrated the Accent Color theme picker directly into the final Preview toolbar for instant visual feedback.
+- **Codebase Hardening**: Executed a deep structural cleanup, eliminating unused components, rectifying state-in-effect traps, and resolving React render-cycle warnings to achieve a pristine, zero-error ESLint production build.
+
+---
+
+## [3.5.0] — 2026-04-21
 ### 🏛️ Production Hardening
 - **Performance Optimization**: Transitioned the template engine to **Lazy Loading** (React.lazy), splitting 23 templates into separate bundles and reducing initial load size by ~40%.
 - **UX Refinement**: Completed a comprehensive visual audit of all 23 templates to ensure 100% theme consistency and layout stability.

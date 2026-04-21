@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { UserRole } from '../types';
 import { authenticate, getSession, logout as logoutUtil, changePassword as changePasswordUtil } from '../utils/auth';
 
@@ -14,19 +14,15 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check existing session on mount
-  useEffect(() => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const session = getSession();
-    if (session) {
-      setIsAuthenticated(true);
-      setRole(session.role);
-    }
-    setIsLoading(false);
-  }, []);
+    return !!session;
+  });
+  const [role, setRole] = useState<UserRole | null>(() => {
+    const session = getSession();
+    return session ? session.role : null;
+  });
+  const isLoading = false;
 
   const login = useCallback(async (accessCode: string) => {
     const result = await authenticate(accessCode);
@@ -55,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

@@ -63,7 +63,11 @@ export default function CompactTemplate({ data }: { data: ResumeData }) {
               {data.projects.filter(p => p.name).map(proj => (
                 <div key={proj.id} style={{ marginBottom: '8px' }}>
                   <div style={{ fontWeight: 800 }}>{proj.name} | <span style={{ fontWeight: 500, color: '#64748b' }}>{proj.technologies}</span></div>
-                  <p style={{ margin: '2px 0 0', lineHeight: 1.4 }}>{generateBulletPoints(proj.description)[0]}</p>
+                  <ul style={{ margin: '4px 0 0', paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {generateBulletPoints(proj.description).map((b, i) => (
+                      <li key={i} style={{ lineHeight: 1.4 }}>{b}</li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </section>

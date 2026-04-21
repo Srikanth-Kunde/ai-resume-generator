@@ -16,12 +16,11 @@ import StepEducation from './components/builder/StepEducation';
 import StepSkills from './components/builder/StepSkills';
 import StepProjects from './components/builder/StepProjects';
 import StepExtras from './components/builder/StepExtras';
-import StepTemplate from './components/builder/StepTemplate';
 import ResumePreview from './components/preview/ResumePreview';
 import CoverLetterModal from './components/cover-letter/CoverLetterModal';
 import { downloadPDF, downloadDOCX } from './utils/pdf-export';
 import { exportAsJSON, importFromJSON, saveToHistory } from './utils/storage';
-import { templates } from './components/builder/StepTemplate';
+import { templates, THEME_OPTIONS } from './components/builder/StepTemplate';
 import type { UserRole } from './types';
 
 // ============================================
@@ -137,7 +136,6 @@ function Dashboard() {
       case 4: return <StepSkills />;
       case 5: return <StepProjects />;
       case 6: return <StepExtras />;
-      case 7: return <StepTemplate selectedTemplate={selectedTemplate} onSelectTemplate={setSelectedTemplate} />;
       default: return null;
     }
   };
@@ -254,6 +252,16 @@ function Dashboard() {
                 >
                   {templates.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={data.themeColor || 'slate'}
+                  onChange={e => setData({ ...data, themeColor: e.target.value })}
+                  className="field-input"
+                  style={{ width: 'auto', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  {THEME_OPTIONS.map(theme => (
+                    <option key={theme.id} value={theme.id}>{theme.name}</option>
                   ))}
                 </select>
 

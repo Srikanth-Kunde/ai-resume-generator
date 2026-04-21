@@ -67,7 +67,14 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const [lastSaved, setLastSaved] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const undoManager = useRef(new UndoRedoManager());
-  const [, setUndoVersion] = useState(0); // Force re-render on undo/redo state change
+  const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
+
+  const updateHistoryState = useCallback(() => {
+    setHistoryState({
+      canUndo: undoManager.current.canUndo,
+      canRedo: undoManager.current.canRedo
+    });
+  }, []);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -84,8 +91,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const setData = useCallback((newData: ResumeData) => {
     undoManager.current.push(data);
     setDataRaw(newData);
-    setUndoVersion(v => v + 1);
-  }, [data]);
+    updateHistoryState();
+  }, [data, updateHistoryState]);
 
   const updateField = useCallback(<K extends keyof ResumeData>(key: K, value: ResumeData[K]) => {
     setData({ ...data, [key]: value });
@@ -94,32 +101,32 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const resetData = useCallback(() => {
     undoManager.current.push(data);
     setDataRaw(createEmptyResume());
-    setUndoVersion(v => v + 1);
-  }, [data]);
+    updateHistoryState();
+  }, [data, updateHistoryState]);
 
   const loadSample = useCallback(() => {
     undoManager.current.push(data);
     setDataRaw(sampleData);
     saveResumeData(sampleData);
     setLastSaved(Date.now());
-    setUndoVersion(v => v + 1);
-  }, [data]);
+    updateHistoryState();
+  }, [data, updateHistoryState]);
 
   const undo = useCallback(() => {
     const prev = undoManager.current.undo(data);
     if (prev) {
       setDataRaw(prev);
-      setUndoVersion(v => v + 1);
+      updateHistoryState();
     }
-  }, [data]);
+  }, [data, updateHistoryState]);
 
   const redo = useCallback(() => {
     const next = undoManager.current.redo(data);
     if (next) {
       setDataRaw(next);
-      setUndoVersion(v => v + 1);
+      updateHistoryState();
     }
-  }, [data]);
+  }, [data, updateHistoryState]);
 
   return (
     <ResumeContext.Provider value={{
@@ -132,14 +139,15 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       isSaving,
       undo,
       redo,
-      canUndo: undoManager.current.canUndo,
-      canRedo: undoManager.current.canRedo,
+      canUndo: historyState.canUndo,
+      canRedo: historyState.canRedo,
     }}>
       {children}
     </ResumeContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useResume(): ResumeContextValue {
   const ctx = useContext(ResumeContext);
   if (!ctx) throw new Error('useResume must be used within ResumeProvider');

@@ -20,11 +20,12 @@
 
 ### Core Features
 - **23 Premium Templates**: Professionally designed layouts including ATS-optimized, Executive, Creative, and Modern styles (inspired by BetterCV).
-- **Gallary-Style Selection**: A dedicated template gallery with category filtering (Simple, Professional, ATS, etc.).
+- **Dynamic Template Preview**: Instantly switch between templates and adjust accent colors directly from the dashboard.
 - **Smooth Real-time Editing**: Minimalist, high-performance editor with instant visual feedback.
 - **AI Content Engine**: Specialized logic for generating high-impact summaries and bullet points.
 - **Code-Splitted Performance**: Optimized component loading for lightning-fast initial dashboards.
-- **Security Hardened**: Advanced role-based access with double-hashed default credentials.table JSON export/import.
+- **Security Hardened**: Advanced role-based access with double-hashed default credentials.
+- **Data Portability**: Full JSON export and import capabilities for seamless backup.
 
 ---
 
